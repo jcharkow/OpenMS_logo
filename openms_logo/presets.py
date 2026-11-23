@@ -160,6 +160,93 @@ def pyopenms_viz(theme: str = "standard"):
     return spectrum_wordmark(theme, suffix="viz", prefix="py")
 
 
+# ---------------------------------------------------------------------------
+# Square OpenMS-lib variants: two lines, "Open" over "MS lib"
+#
+#   A  bars on top          B  bars hanging below     C  official logo + lib
+#      ▌▌█▌ ▖█▌ ▌▌█            Open                      Open ▌▌ ▌█▌
+#      Open                    MS lib                    ▌█▌ ▌▌ MS
+#      MS lib                  ▌▌█▌ ▖█▌ ▌▌█              lib
+# ---------------------------------------------------------------------------
+
+LINE_GAP = 20.0   # p descender -> next line's caps (same as AXIS_GAP)
+
+
+def _stack_letters(theme, suffix, suffix_scale, suffix_paint, word_gap):
+    """[O, p, e, n_short] / [M, S, suffix] left-aligned. ``suffix_scale=None``
+    sizes the suffix so the second line is exactly as wide as "Open"."""
+    from .text import logo_text
+
+    top = [E.letter_O(), E.letter_p(), E.letter_e(), E.letter_n_short()]
+    left, right = top[0].bounds[0], top[-1].bounds[2]
+    M, S = E.letter_M(), E.letter_S()
+    dx = left - M.bbox[0]
+    dy = top[1].bounds[3] + LINE_GAP - min(M.bbox[1], S.bbox[1])
+    M, S = M.translate(dx, dy), S.translate(dx, dy)
+    baseline2 = brand.BASELINE_MS + dy
+    x_sfx = S.bounds[2] + word_gap
+    if suffix_scale is None:   # fit the line width to "Open"
+        unit = logo_text(suffix, 0, 0)
+        suffix_scale = (right - x_sfx) / unit.width
+    probe = logo_text(suffix, 0, baseline2, scale=suffix_scale, name=f"text_{suffix}")
+    sfx = probe.translate(x_sfx - probe.bbox[0])
+    if suffix_paint == "gradient":
+        sfx = sfx.with_paint(_lib_gradient(theme, sfx.bbox[0], sfx.bbox[2]))
+    return top, [M, S, sfx]
+
+
+def square_lib(theme: str = "standard", suffix: str = "lib", bars: str = "top",
+               bar_scale: float = 0.7, suffix_scale: float | None = None,
+               suffix_paint: str = "gradient", word_gap: float = 34.0):
+    """Square OpenMS-<suffix> logo. ``bars``: "top" (stand above "Open") or
+    "bottom" (hang below "MS lib"). Bars are the official bars 1-10 at their
+    official x positions (so official colours), heights * ``bar_scale``."""
+    top, second = _stack_letters(theme, suffix, suffix_scale, suffix_paint, word_gap)
+    letters = top + second
+    if bars == "top":
+        axis = min(el.bounds[1] for el in top) - AXIS_GAP
+        direction = "up"
+    else:
+        axis = max(el.bounds[3] for el in second) + AXIS_GAP
+        direction = "down"
+    spectrum = [E.bar(x, h * bar_scale, direction, axis_y=axis, name=f"spectrum_bar_{i + 1:02d}")
+                for i, (x, h, _) in enumerate(E.OFFICIAL_BARS[:10])]
+    # centre the spectrum over "Open"; translating keeps each bar's official colour
+    lo, hi = top[0].bounds[0], top[-1].bounds[2]
+    shift = (lo + hi) / 2 - (spectrum[0].bounds[0] + spectrum[-1].bounds[2]) / 2
+    return [b.translate(shift) for b in spectrum] + letters
+
+
+def openms_lib_square_top(theme: str = "standard"):
+    """A: spectrum on top, "Open" / "MS lib"."""
+    return square_lib(theme, bars="top")
+
+
+def openms_lib_square_bottom(theme: str = "standard"):
+    """B: "Open" / "MS lib", spectrum hanging below (like the official bars)."""
+    return square_lib(theme, bars="bottom")
+
+
+def openms_lib_square_ink(theme: str = "standard"):
+    """D: like A, but "lib" in the letter colour; the bars carry all the colour."""
+    return square_lib(theme, bars="top", suffix_paint="ink")
+
+
+def openms_lib_official_stack(theme: str = "standard"):
+    """C: the untouched official logo with "lib" as a third line under the
+    hanging bars, left-aligned with "O", same letter size as "MS"."""
+    from .text import logo_text
+
+    logo = full(theme)
+    O = E.letter_O()
+    bottom = max(el.bounds[3] for el in logo)
+    probe = logo_text("lib", 0, 0)
+    baseline = bottom + LINE_GAP - probe.bbox[1]
+    sfx = logo_text("lib", 0, baseline, name="text_lib")
+    sfx = sfx.translate(O.bounds[0] - sfx.bbox[0])
+    return logo + [sfx.with_paint(_lib_gradient(theme, sfx.bbox[0], sfx.bbox[2]))]
+
+
 PRESETS = {
     "full": full,
     "wordmark": wordmark,
@@ -171,7 +258,22 @@ PRESETS = {
     "oms-lib": oms_lib,
     "openms-lib-spectrum": openms_lib_spectrum,
     "pyopenms-viz": pyopenms_viz,
+    "openms-lib-square-top": openms_lib_square_top,
+    "openms-lib-square-bottom": openms_lib_square_bottom,
+    "openms-lib-square-ink": openms_lib_square_ink,
+    "openms-lib-official-stack": openms_lib_official_stack,
 }
+
+#: Presets whose SVGs are published in logos/ (standard + white). Every other
+#: preset stays available from the CLI / build/.
+PUBLISHED = [
+    "full",
+    "openms-lib-square-top",
+    "openms-lib-square-bottom",
+    "openms-lib-square-ink",
+    "openms-lib-official-stack",
+    "openms-lib-spectrum",
+]
 
 TITLES = {
     "full": "OpenMS logo",
@@ -184,4 +286,8 @@ TITLES = {
     "oms-lib": "OMS-lib logo",
     "openms-lib-spectrum": "OpenMS-lib logo",
     "pyopenms-viz": "pyOpenMS-viz logo",
+    "openms-lib-square-top": "OpenMS-lib logo",
+    "openms-lib-square-bottom": "OpenMS-lib logo",
+    "openms-lib-square-ink": "OpenMS-lib logo",
+    "openms-lib-official-stack": "OpenMS-lib logo",
 }

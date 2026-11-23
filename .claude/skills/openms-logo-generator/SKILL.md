@@ -62,7 +62,7 @@ A bar you move keeps exactly the colour it has in the official logo, so don't re
    python scripts/render_check.py build/<new>*.svg  # then LOOK at build/png/<new>.png
    ```
    Check the render for overlaps, clipped clear space, legibility at small size, and white-on-light or dark-on-dark mistakes.
-8. **Publish:** if you added or changed a preset, regenerate `logos/` (see AGENTS.md) and commit the SVGs together with the code.
+8. **Publish:** only presets in `presets.PUBLISHED` go into `logos/`. If you add or change one of them, regenerate the folder (see AGENTS.md) and commit the SVGs together with the code.
 9. **Report** the sublogo as derived and not yet official (it needs brand-owner approval). State which elements it uses.
 
 ## Layout patterns already built (reuse before inventing)
@@ -75,7 +75,10 @@ A bar you move keeps exactly the colour it has in the official logo, so don't re
 | `oms-lib` | "OMS" on one line with "-lib" and a new row of bars below |
 | `openms-lib-spectrum`, `pyopenms-viz` | **spectrum wordmark**: "OpenMS" on one line (`one_line_openms()`). Bars 1–10, flipped to stand on an axis above "Open", run yellow → pink. A suffix on the same axis, right-aligned over "MS", runs purple → blue. An optional prefix ("py") sits before the "O". The layout follows the pyopenms_viz logo. |
 
-For a new product logo, use `presets.spectrum_wordmark(theme, suffix="...", prefix="...")`.
+| `openms-lib-square-top/-bottom/-ink` | **square stack**: "Open" over "MS lib", left-aligned. The suffix is sized so the second line is exactly as wide as "Open". Bars 1–10 are centred above "Open" (top, ink) or hang below "MS lib" (bottom). Use `presets.square_lib(theme, suffix=..., bars=..., suffix_paint=...)`. |
+| `openms-lib-official-stack` | the untouched official logo with "lib" as a third line |
+
+For a new product logo, use `presets.square_lib(...)` or `presets.spectrum_wordmark(theme, suffix="...", prefix="...")`.
 Suffix gradients use lighter tints in the white theme, because #3157e9 on #231f20 is only 2.85:1.
 
 ## CLI cheatsheet

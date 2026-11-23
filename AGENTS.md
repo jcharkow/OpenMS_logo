@@ -73,15 +73,16 @@ python scripts/render_check.py --diff
 python scripts/render_check.py build/*.svg     # PNGs in build/png/ (needs librsvg2-bin)
 ```
 
-`build/` and `fonts/` are git-ignored. The published SVGs live in `logos/`.
-Every preset there comes in both themes, as `<preset>.svg` and `<preset>-white.svg`.
-After you change the code or add a preset, regenerate them:
+`build/` and `fonts/` are git-ignored. `logos/` holds only the presets listed in
+`presets.PUBLISHED`, each in both themes (`<preset>.svg` and `<preset>-white.svg`).
+Other presets are generated into `build/` and are not committed. After you
+change the code or the `PUBLISHED` list, regenerate the folder:
 
 ```bash
-python -m openms_logo $(python -c "from openms_logo.presets import PRESETS; print(*PRESETS)") --out logos
+rm logos/*.svg && python -m openms_logo $(python -c "from openms_logo.presets import PUBLISHED; print(*PUBLISHED)") --out logos
 ```
 
-`tests/test_official.py::test_logos_dir_up_to_date` fails if `logos/` is stale.
+The tests fail if `logos/` is stale or holds files that aren't in `PUBLISHED`.
 Except for `logos/full*.svg`, everything in `logos/` is a derived sublogo and is not yet official.
 
 ## Known discrepancies (don't "fix" these silently)
