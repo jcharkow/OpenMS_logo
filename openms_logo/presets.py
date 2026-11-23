@@ -246,6 +246,23 @@ def openms_lib_peak4_pen(theme: str = "standard"):
                          peak_height=SPREAD_HEIGHT, spread_padding=0.15)
 
 
+PEN_PADDINGS = (0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30)
+
+
+def _peak4_pen_padded(padding: float):
+    def fn(theme: str = "standard"):
+        return peak_wordmark(theme, heights=PEAK4_SPREAD, colors="gradient", spread="pen",
+                             peak_height=SPREAD_HEIGHT, spread_padding=padding)
+    fn.__name__ = f"openms_lib_peak4_pen_pad{round(padding * 100):02d}"
+    fn.__doc__ = (f'peak4-pen with {padding:.0%} padding each side: the bars cover the '
+                  f'middle {1 - 2 * padding:.0%} of "pen".')
+    return fn
+
+
+PEAK4_PEN_PADDED = {f"openms-lib-peak4-pen-pad{round(p * 100):02d}": _peak4_pen_padded(p)
+                    for p in PEN_PADDINGS}
+
+
 def openms_lib_peak4_open(theme: str = "standard"):
     """peak4 with the bars spread across "Open"."""
     return peak_wordmark(theme, heights=PEAK4_SPREAD, colors="gradient", spread="Open",
@@ -394,6 +411,7 @@ PRESETS = {
     "openms-lib-peak3": openms_lib_peak3,
     "openms-lib-peak4": openms_lib_peak4,
     "openms-lib-peak4-pen": openms_lib_peak4_pen,
+    **PEAK4_PEN_PADDED,
     "openms-lib-peak4-open": openms_lib_peak4_open,
     "openms-lib-peak4-open-span": openms_lib_peak4_open_span,
     "openms-lib-plain-span": openms_lib_plain_span,
@@ -406,10 +424,7 @@ PRESETS = {
 #: preset stays available from the CLI / build/.
 PUBLISHED = [
     "full",
-    "openms-lib-peak4",
-    "openms-lib-peak4-pen",
-    "openms-lib-peak4-open",
-    "openms-lib-peak4-open-span",
+    *PEAK4_PEN_PADDED,
     "openms-lib-plain",
     "openms-lib-plain-span",
 ]
@@ -432,6 +447,7 @@ TITLES = {
     "openms-lib-peak3": "OpenMS-lib logo",
     "openms-lib-peak4": "OpenMS-lib logo",
     "openms-lib-peak4-pen": "OpenMS-lib logo",
+    **{k: "OpenMS-lib logo" for k in PEAK4_PEN_PADDED},
     "openms-lib-peak4-open": "OpenMS-lib logo",
     "openms-lib-peak4-open-span": "OpenMS-lib logo",
     "openms-lib-plain-span": "OpenMS-lib logo",
