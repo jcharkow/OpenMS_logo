@@ -78,3 +78,13 @@ def test_short_n_matches_official_n_except_leg():
 def test_lettering_presets_compose(name):
     for theme in ("standard", "white"):
         assert compose(presets.PRESETS[name](theme), theme=theme).startswith("<?xml")
+
+
+@pytest.mark.skipif(not FONTS.exists(), reason="run scripts/fetch_fonts.py")
+@pytest.mark.parametrize("name", list(presets.PRESETS))
+def test_logos_dir_up_to_date(name):
+    logos = Path(__file__).resolve().parent.parent / "logos"
+    for theme, suffix in (("standard", ""), ("white", "-white")):
+        expected = compose(presets.PRESETS[name](theme), theme=theme, title=presets.TITLES[name])
+        assert (logos / f"{name}{suffix}.svg").read_text() == expected, \
+            f"logos/{name}{suffix}.svg is stale -- regenerate (see AGENTS.md)"

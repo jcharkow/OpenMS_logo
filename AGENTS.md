@@ -56,6 +56,7 @@ openms_logo/
 scripts/fetch_fonts.py   downloads the brand fonts (OFL) into fonts/ (git-ignored)
 scripts/render_check.py  PNG previews + pixel diff against the official logo
 tests/                   reproduction tests (pytest)
+logos/                   generated SVGs for every preset (committed; never hand-edit)
 make_openms_lib.py       legacy entry point -> presets openms-lib / oms-lib
 ```
 
@@ -72,8 +73,16 @@ python scripts/render_check.py --diff
 python scripts/render_check.py build/*.svg     # PNGs in build/png/ (needs librsvg2-bin)
 ```
 
-`build/` and `fonts/` are git-ignored. Commit a generated SVG only when the user
-asks for it, and commit the code that produces it in the same change.
+`build/` and `fonts/` are git-ignored. The published SVGs live in `logos/`.
+Every preset there comes in both themes, as `<preset>.svg` and `<preset>-white.svg`.
+After you change the code or add a preset, regenerate them:
+
+```bash
+python -m openms_logo $(python -c "from openms_logo.presets import PRESETS; print(*PRESETS)") --out logos
+```
+
+`tests/test_official.py::test_logos_dir_up_to_date` fails if `logos/` is stale.
+Except for `logos/full*.svg`, everything in `logos/` is a derived sublogo and is not yet official.
 
 ## Known discrepancies (don't "fix" these silently)
 

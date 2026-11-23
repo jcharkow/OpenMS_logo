@@ -15,6 +15,7 @@ from openms_logo import compose, elements as E
 svg = compose(E.bars_under_O() + [E.letter_O()], theme="white")
 ```
 
+- Generated logos and sublogos (standard and white): `logos/`. Only `logos/full*.svg` is official; the others are derived sublogos.
 - Official logo file: `OpenMS_transparent_blackFont.svg`
 - Brand guidelines: `OpenMS_CorporateDesign_current.pdf`
 - Rules for contributors and AI agents: [AGENTS.md](AGENTS.md)

@@ -62,7 +62,8 @@ A bar you move keeps exactly the colour it has in the official logo, so don't re
    python scripts/render_check.py build/<new>*.svg  # then LOOK at build/png/<new>.png
    ```
    Check the render for overlaps, clipped clear space, legibility at small size, and white-on-light or dark-on-dark mistakes.
-8. **Report** the sublogo as derived and not yet official (it needs brand-owner approval). State which elements it uses.
+8. **Publish:** if you added or changed a preset, regenerate `logos/` (see AGENTS.md) and commit the SVGs together with the code.
+9. **Report** the sublogo as derived and not yet official (it needs brand-owner approval). State which elements it uses.
 
 ## Layout patterns already built (reuse before inventing)
 
