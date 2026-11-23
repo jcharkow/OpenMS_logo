@@ -286,6 +286,7 @@ def openms_lib_pen15(theme: str = "standard", **suffix_opts):
 #: "lib" experiments on top of openms_lib_pen15: size x position
 LIB_SIZES = {
     "s62": {"suffix_scale": 0.62},                 # current
+    "s70": {"suffix_scale": 0.70},
     "s80": {"suffix_scale": 0.80},                 # medium
     "bar": {"suffix_height": SPREAD_HEIGHT},       # top of "lib" level with the tallest bar
 }
@@ -299,7 +300,7 @@ LIB_POSITIONS = {
 def _pen15_lib(size: str, pos: str):
     def fn(theme: str = "standard"):
         return openms_lib_pen15(theme, **LIB_SIZES[size], **LIB_POSITIONS[pos])
-    label = {"s62": "0.62 x MS size", "s80": "0.8 x MS size",
+    label = {"s62": "0.62 x MS size", "s70": "0.7 x MS size", "s80": "0.8 x MS size",
              "bar": "as tall as the top bar"}[size]
     where = {"right": "right-aligned with S", "right10": "right-aligned, 10% in from S",
              "center": "centred over MS"}[pos]
@@ -477,8 +478,9 @@ PRESETS = {
 #: preset stays available from the CLI / build/.
 PUBLISHED = [
     "full",
-    "openms-lib-peak4-pen-pad15",   # chosen design
-    *[k for k in PEN15_LIB_VARIANTS if k != "openms-lib-pen15-lib-s62-right"],  # = pad15
+    "openms-lib-peak4-pen-pad15",       # favourite ("lib" 0.62x, right-aligned)
+    "openms-lib-pen15-lib-s70-right",
+    "openms-lib-pen15-lib-s80-right",   # runner-up
 ]
 
 TITLES = {

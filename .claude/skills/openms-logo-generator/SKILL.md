@@ -80,8 +80,10 @@ A bar you move keeps exactly the colour it has in the official logo, so don't re
   - `-pen` and `-open` spread the 4 bars evenly across "pen" or "Open" (`spread=`), with taller bars (`SPREAD_HEIGHT`). `-pen` keeps 15% padding on each side (`spread_padding=0.15`). `-pen-padNN` are the same design with NN% padding (`PEN_PADDINGS`).
   - `-span` variants enlarge "lib" (`SPAN_SCALE`) and letter-space it across the width of "MS" (`suffix_span=True`).
   - **Chosen design (2026-11-23):** `openms-lib-peak4-pen-pad15`, the same as `presets.openms_lib_pen15()`. The bars are centred over "pen" with 15% padding. The `openms-lib-pen15-lib-<size>-<pos>` variants try different sizes and positions for "lib":
-    - sizes: `s62`, `s80`, and `bar` (top of "lib" level with the tallest bar)
+    - sizes: `s62`, `s70`, `s80`, and `bar` (top of "lib" level with the tallest bar)
     - positions: `right`, `right10` (10% in from "S") and `center` (over "MS")
+
+    The user prefers "lib" right-aligned. Favourite: pad15 (s62). Runner-up: s80-right. Also published: s70-right.
 
     Each is set through `LIB_SIZES` / `LIB_POSITIONS` and the `peak_wordmark()` options `suffix_align`, `suffix_padding` and `suffix_height`.
 
