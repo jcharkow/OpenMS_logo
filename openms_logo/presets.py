@@ -164,7 +164,8 @@ PEAK_COLORS = ("yellow", "orange", "pink", "purple")
 def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: str = "lib",
                   prefix: str = "", colors: str = "solid", peak_height: float = 112.0,
                   over: str = "Open", suffix_scale: float = 0.62,
-                  spread: str | None = None, suffix_span: bool = False):
+                  spread: str | None = None, suffix_span: bool = False,
+                  spread_padding: float = 0.0):
     """One-line "OpenMS" + suffix with a small peak of bars standing above it.
 
     ``heights``: bar heights as fractions of ``peak_height`` (empty = no bars).
@@ -172,6 +173,8 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
     ``over``: centre the peak over "Open" or "OpenMS" (bars at the official pitch).
     ``spread``: instead, stretch the bars evenly across "pen" or "Open"
     (outer bar edges flush with the outer letter edges; bar width unchanged).
+    ``spread_padding``: inset on each side of the spread, as a fraction of
+    the spread width (0.15 = bars cover the middle 70%, still centred).
     ``suffix_span``: letter-space the suffix so it spans the width of "MS".
     """
     from .text import letter_gap, logo_text
@@ -185,6 +188,8 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
             x0, x_end = first.bounds[0], letters[3].bounds[2]
             if suffix_span:   # keep the last bar clear of the suffix above "M"
                 x_end = min(x_end, letters[4].bounds[0] - 2 * AXIS_GAP)
+            inset = (x_end - x0) * spread_padding
+            x0, x_end = x0 + inset, x_end - inset
             width = x_end - x0
             pitch = (width - brand.BAR_WIDTH) / max(len(heights) - 1, 1)
         else:
@@ -236,9 +241,9 @@ SPAN_SCALE = 0.8                       # "lib" size when it spans "MS"
 
 
 def openms_lib_peak4_pen(theme: str = "standard"):
-    """peak4 with the bars spread across "pen"."""
+    """peak4 with the bars centred over "pen", covering its middle 70%."""
     return peak_wordmark(theme, heights=PEAK4_SPREAD, colors="gradient", spread="pen",
-                         peak_height=SPREAD_HEIGHT)
+                         peak_height=SPREAD_HEIGHT, spread_padding=0.15)
 
 
 def openms_lib_peak4_open(theme: str = "standard"):
