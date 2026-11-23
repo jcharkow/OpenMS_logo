@@ -50,7 +50,8 @@ openms_logo/
   elements.py         Element model; letter_*/bar_* functions; bar(); group helpers
   text.py             logo-weight lettering from fonts (outlined, no font deps in output)
   compose.py          compose()/write(): elements -> SVG (themes, viewBox, gradients)
-  presets.py          full, wordmark, bars, open, ms, o-icon, openms-lib, oms-lib
+  presets.py          full, wordmark, bars, open, ms, o-icon, openms-lib, oms-lib,
+                      openms-lib-spectrum, pyopenms-viz (spectrum_wordmark for new products)
   __main__.py         CLI (python -m openms_logo --help)
 scripts/fetch_fonts.py   downloads the brand fonts (OFL) into fonts/ (git-ignored)
 scripts/render_check.py  PNG previews + pixel diff against the official logo

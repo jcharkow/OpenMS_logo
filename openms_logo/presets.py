@@ -52,7 +52,7 @@ LIB_GAP = 22.0     # space between "S" and "-lib"
 
 
 def _lib_gradient(theme: str, x1: float, x2: float) -> Gradient:
-    # purple -> blue; lighter tints on dark backdrops for contrast
+    # purple -> blue; lighter tints on dark backdrops for contrast (>= 3:1)
     i = 1 if theme == "white" else 2
     return Gradient("openms-lib", x1, x2,
                     ((0, brand.PALETTE["purple"][i]), (1, brand.PALETTE["blue"][i])))
@@ -95,6 +95,71 @@ def oms_lib(theme: str = "standard", gap: float = 14.0,
     return new_bars + [O, M, S, lib]
 
 
+# ---------------------------------------------------------------------------
+# One-line "spectrum" wordmarks (layout inspired by the pyopenms_viz logo):
+#
+#     ▌ ▌▌ ▌    ▌▌ ▌   ▌▌▌           lib
+#   [prefix]OpenMS
+#
+# Bars stand on an axis above "Open" and run yellow -> pink; the suffix sits on
+# the same axis above "MS" in purple -> blue, so bars + suffix together carry
+# the complete official gradient. Every bar keeps the x position (and so the
+# colour) of the official bar it is derived from.
+# ---------------------------------------------------------------------------
+
+AXIS_GAP = 20.0     # axis -> letter tops; same as bar axis -> "MS" caps in the official logo
+
+
+def one_line_openms():
+    """"OpenMS" on a single line at the "Open" baseline, official letterforms
+    (short-leg "n"), font spacing between "n" and "M"."""
+    from .text import letter_gap
+
+    O, p, e, n = E.letter_O(), E.letter_p(), E.letter_e(), E.letter_n_short()
+    M, S = E.letter_M(), E.letter_S()
+    dx = n.bounds[2] + letter_gap("n", "M") - M.bbox[0]
+    dy = brand.BASELINE_OPEN - brand.BASELINE_MS
+    return [O, p, e, n, M.translate(dx, dy), S.translate(dx, dy)]
+
+
+def spectrum_wordmark(theme: str = "standard", suffix: str = "lib", prefix: str = "",
+                      bar_scale: float = 0.7, suffix_scale: float = 0.62):
+    from .text import letter_gap, logo_text
+
+    letters = one_line_openms()
+    top = min(el.bounds[1] for el in letters)
+    axis = top - AXIS_GAP
+
+    # bars 1-10 of the official logo, flipped to stand on the axis
+    spectrum = [E.bar(x, h * bar_scale, "up", axis_y=axis, name=f"spectrum_bar_{i + 1:02d}")
+                for i, (x, h, _) in enumerate(E.OFFICIAL_BARS[:10])]
+
+    out = spectrum + letters
+    if prefix:
+        pre = logo_text(prefix, 0, brand.BASELINE_OPEN, name=f"text_{prefix}")
+        gap = letter_gap(prefix[-1], "O")
+        out.append(pre.translate(letters[0].bounds[0] - gap - pre.bounds[2]))
+    if suffix:
+        # right-aligned with "S", sitting on the axis; purple -> blue so bars +
+        # suffix carry the whole brand gradient (lighter tints on dark
+        # backdrops: #3157e9 on #231f20 is only 2.85:1)
+        probe = logo_text(suffix, 0, axis, scale=suffix_scale)
+        sfx = probe.translate(letters[-1].bounds[2] - probe.bbox[2])
+        x0, _, x1, _ = sfx.bbox
+        out.append(sfx.with_paint(_lib_gradient(theme, x0, x1)))
+    return out
+
+
+def openms_lib_spectrum(theme: str = "standard"):
+    """"OpenMS" one line, spectrum bars above "Open", "lib" above "MS"."""
+    return spectrum_wordmark(theme, suffix="lib")
+
+
+def pyopenms_viz(theme: str = "standard"):
+    """pyOpenMS-viz in the same layout."""
+    return spectrum_wordmark(theme, suffix="viz", prefix="py")
+
+
 PRESETS = {
     "full": full,
     "wordmark": wordmark,
@@ -104,6 +169,8 @@ PRESETS = {
     "o-icon": o_icon,
     "openms-lib": openms_lib,
     "oms-lib": oms_lib,
+    "openms-lib-spectrum": openms_lib_spectrum,
+    "pyopenms-viz": pyopenms_viz,
 }
 
 TITLES = {
@@ -115,4 +182,6 @@ TITLES = {
     "o-icon": "OpenMS icon",
     "openms-lib": "OpenMS-lib logo",
     "oms-lib": "OMS-lib logo",
+    "openms-lib-spectrum": "OpenMS-lib logo",
+    "pyopenms-viz": "pyOpenMS-viz logo",
 }

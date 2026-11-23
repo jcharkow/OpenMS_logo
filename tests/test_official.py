@@ -61,3 +61,20 @@ def test_only_brand_colours_used():
         for theme in ("standard", "white"):
             used = set(re.findall(r'#[0-9a-fA-F]{6}\b', compose(fn(theme), theme=theme)))
             assert used <= allowed, (name, used - allowed)
+
+
+FONTS = Path(__file__).resolve().parent.parent / "fonts" / "MontserratAlternates-Regular.ttf"
+
+
+@pytest.mark.skipif(not FONTS.exists(), reason="run scripts/fetch_fonts.py")
+def test_short_n_matches_official_n_except_leg():
+    off, short = E.letter_n().bbox, E.letter_n_short().bbox
+    assert short[:3] == pytest.approx(off[:3], abs=0.05)          # same left, top, right
+    assert short[3] == pytest.approx(brand.BASELINE_OPEN + brand.GLYPH_STROKE / 2, abs=0.05)
+
+
+@pytest.mark.skipif(not FONTS.exists(), reason="run scripts/fetch_fonts.py")
+@pytest.mark.parametrize("name", ["openms-lib-spectrum", "pyopenms-viz", "openms-lib", "oms-lib"])
+def test_lettering_presets_compose(name):
+    for theme in ("standard", "white"):
+        assert compose(presets.PRESETS[name](theme), theme=theme).startswith("<?xml")

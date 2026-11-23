@@ -145,6 +145,19 @@ def letter_n() -> Element:
     return _letter("n")
 
 
+def letter_n_short() -> Element:
+    """The "n" with a normal-length leg, for one-line layouts where the long
+    leg would dangle below the baseline. Drawn from Montserrat Alternates
+    Regular at the measured logo size + stroke and placed exactly over the
+    official "n" -- it matches it pixel for pixel except for the leg
+    (tests/test_official.py). Needs fonts (``python scripts/fetch_fonts.py``)."""
+    from .text import side_bearings, logo_text
+
+    lsb, _ = side_bearings("n")
+    x = letter_n().bbox[0] + brand.GLYPH_STROKE / 2 - lsb * brand.GLYPH_SIZE
+    return logo_text("n", x, brand.BASELINE_OPEN, name="letter_n_short")
+
+
 def letter_M() -> Element:
     """The "M" of "MS" (Montserrat, not Alternates)."""
     return _letter("M")

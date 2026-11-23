@@ -53,6 +53,29 @@ def outline(text: str, x: float, baseline: float, size: float, font: str = "alte
     return " ".join(p for p in parts if p), cx
 
 
+def side_bearings(char: str, font: str = "alternates") -> tuple[float, float]:
+    """(left, right) side bearing of ``char`` as a fraction of the em."""
+    from fontTools.pens.boundsPen import BoundsPen
+    from fontTools.ttLib import TTFont
+
+    tt = TTFont(str(font_path(font)))
+    gs, upm = tt.getGlyphSet(), tt["head"].unitsPerEm
+    g = gs[tt.getBestCmap()[ord(char)]]
+    pen = BoundsPen(gs)
+    g.draw(pen)
+    return pen.bounds[0] / upm, (g.width - pen.bounds[2]) / upm
+
+
+def letter_gap(left: str, right: str, scale: float = 1.0) -> float:
+    """Natural gap between the *outlines* of two logo-weight letters set
+    side by side (font spacing minus the stroke). The capital "M" is taken
+    from Montserrat, everything else from Montserrat Alternates."""
+    fl = "montserrat" if left == "M" else "alternates"
+    fr = "montserrat" if right == "M" else "alternates"
+    gap = side_bearings(left, fl)[1] + side_bearings(right, fr)[0]
+    return (gap * brand.GLYPH_SIZE - brand.GLYPH_STROKE) * scale
+
+
 def logo_text(text: str, x: float, baseline: float = brand.BASELINE_MS, *,
               scale: float = 1.0, font: str = "alternates", paint=INK,
               name: str | None = None) -> Element:
