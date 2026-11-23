@@ -150,6 +150,83 @@ def spectrum_wordmark(theme: str = "standard", suffix: str = "lib", prefix: str 
     return out
 
 
+# ---------------------------------------------------------------------------
+# Peak wordmarks: the spectrum layout with a single, simple peak of 3-4 bars
+# (or none). Heights are fractions of ``peak_height``; colours either the
+# discrete logo colours (yellow, orange, pink, ...) or the yellow -> pink part
+# of the gradient running across the group. The suffix keeps purple -> blue,
+# so bars + suffix still walk through all five logo colours.
+# ---------------------------------------------------------------------------
+
+PEAK_COLORS = ("yellow", "orange", "pink", "purple")
+
+
+def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: str = "lib",
+                  prefix: str = "", colors: str = "solid", peak_height: float = 112.0,
+                  over: str = "Open", suffix_scale: float = 0.62):
+    """One-line "OpenMS" + suffix with a small peak of bars standing above it.
+
+    ``heights``: bar heights as fractions of ``peak_height`` (empty = no bars).
+    ``colors``: "solid" (one logo colour per bar) or "gradient".
+    ``over``: centre the peak over "Open" or "OpenMS".
+    """
+    from .text import letter_gap, logo_text
+
+    letters = one_line_openms()
+    axis = min(el.bounds[1] for el in letters) - AXIS_GAP
+    out = []
+    if heights:
+        span = letters[3] if over == "Open" else letters[-1]
+        centre = (letters[0].bounds[0] + span.bounds[2]) / 2
+        width = (len(heights) - 1) * brand.BAR_PITCH + brand.BAR_WIDTH
+        x0 = centre - width / 2
+        if colors == "solid":
+            paints = [brand.LOGO_COLORS[c] for c in PEAK_COLORS[:len(heights)]]
+        else:
+            grad = Gradient("openms-peak", x0, x0 + width, (
+                (0, brand.LOGO_COLORS["yellow"]), (0.5, brand.LOGO_COLORS["orange"]),
+                (1, brand.LOGO_COLORS["pink"])))
+            paints = [grad] * len(heights)
+        out += [E.bar(x0 + i * brand.BAR_PITCH, f * peak_height, "up", axis_y=axis,
+                      name=f"peak_bar_{i + 1}", paint=paint)
+                for i, (f, paint) in enumerate(zip(heights, paints))]
+    out += letters
+    if prefix:
+        pre = logo_text(prefix, 0, brand.BASELINE_OPEN, name=f"text_{prefix}")
+        out.append(pre.translate(letters[0].bounds[0] - letter_gap(prefix[-1], "O") - pre.bounds[2]))
+    if suffix:
+        probe = logo_text(suffix, 0, axis, scale=suffix_scale, name=f"text_{suffix}")
+        sfx = probe.translate(letters[-1].bounds[2] - probe.bbox[2])
+        out.append(sfx.with_paint(_lib_gradient(theme, sfx.bbox[0], sfx.bbox[2])))
+    return out
+
+
+def openms_lib_peak3(theme: str = "standard"):
+    """3 bars, symmetric peak, solid yellow / orange / pink."""
+    return peak_wordmark(theme, heights=(0.55, 1.0, 0.55))
+
+
+def openms_lib_peak4(theme: str = "standard"):
+    """4 bars, skewed peak like pyopenms_viz, yellow -> pink gradient."""
+    return peak_wordmark(theme, heights=(0.6, 1.0, 0.7, 0.3), colors="gradient")
+
+
+def openms_lib_peak4_tall(theme: str = "standard"):
+    """4-bar gradient peak, but tall (about 1.4x the letter height), closer to
+    the proportions of the pyopenms_viz logo."""
+    return peak_wordmark(theme, heights=(0.6, 1.0, 0.7, 0.3), colors="gradient", peak_height=200.0)
+
+
+def openms_lib_peak4_solid(theme: str = "standard"):
+    """4 bars, symmetric peak, solid yellow / orange / pink / purple."""
+    return peak_wordmark(theme, heights=(0.45, 0.85, 1.0, 0.55))
+
+
+def openms_lib_plain(theme: str = "standard"):
+    """No bars: one-line "OpenMS" with "lib" above "MS"."""
+    return peak_wordmark(theme, heights=())
+
+
 def openms_lib_spectrum(theme: str = "standard"):
     """"OpenMS" one line, spectrum bars above "Open", "lib" above "MS"."""
     return spectrum_wordmark(theme, suffix="lib")
@@ -262,16 +339,22 @@ PRESETS = {
     "openms-lib-square-bottom": openms_lib_square_bottom,
     "openms-lib-square-ink": openms_lib_square_ink,
     "openms-lib-official-stack": openms_lib_official_stack,
+    "openms-lib-peak3": openms_lib_peak3,
+    "openms-lib-peak4": openms_lib_peak4,
+    "openms-lib-peak4-tall": openms_lib_peak4_tall,
+    "openms-lib-peak4-solid": openms_lib_peak4_solid,
+    "openms-lib-plain": openms_lib_plain,
 }
 
 #: Presets whose SVGs are published in logos/ (standard + white). Every other
 #: preset stays available from the CLI / build/.
 PUBLISHED = [
     "full",
-    "openms-lib-square-top",
-    "openms-lib-square-bottom",
-    "openms-lib-square-ink",
-    "openms-lib-official-stack",
+    "openms-lib-peak3",
+    "openms-lib-peak4",
+    "openms-lib-peak4-tall",
+    "openms-lib-peak4-solid",
+    "openms-lib-plain",
     "openms-lib-spectrum",
 ]
 
@@ -290,4 +373,9 @@ TITLES = {
     "openms-lib-square-bottom": "OpenMS-lib logo",
     "openms-lib-square-ink": "OpenMS-lib logo",
     "openms-lib-official-stack": "OpenMS-lib logo",
+    "openms-lib-peak3": "OpenMS-lib logo",
+    "openms-lib-peak4": "OpenMS-lib logo",
+    "openms-lib-peak4-tall": "OpenMS-lib logo",
+    "openms-lib-peak4-solid": "OpenMS-lib logo",
+    "openms-lib-plain": "OpenMS-lib logo",
 }
