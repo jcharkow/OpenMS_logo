@@ -83,7 +83,10 @@ A bar you move keeps exactly the colour it has in the official logo, so don't re
     - sizes: `s62`, `s70`, `s80`, and `bar` (top of "lib" level with the tallest bar)
     - positions: `right`, `right10` (10% in from "S") and `center` (over "MS")
 
-    The user prefers "lib" right-aligned. Favourite: pad15 (s62). Runner-up: s80-right. Also published: s70-right.
+    The user prefers "lib" right-aligned.
+    - **Favourite (2026-11-23):** `openms-lib-pen15-lib-s70-right`.
+    - Without extra letter spacing, the tail of the "l" nearly touches the "i". The `-tNN` variants add NN units of spacing (`suffix_tracking`).
+    - The s62 and s80 versions are kept for comparison.
 
     Each is set through `LIB_SIZES` / `LIB_POSITIONS` and the `peak_wordmark()` options `suffix_align`, `suffix_padding` and `suffix_height`.
 

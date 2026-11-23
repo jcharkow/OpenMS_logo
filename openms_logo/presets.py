@@ -166,7 +166,8 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
                   over: str = "Open", suffix_scale: float = 0.62,
                   spread: str | None = None, suffix_span: bool = False,
                   spread_padding: float = 0.0, suffix_align: str = "right",
-                  suffix_padding: float = 0.0, suffix_height: float | None = None):
+                  suffix_padding: float = 0.0, suffix_height: float | None = None,
+                  suffix_tracking: float = 0.0):
     """One-line "OpenMS" + suffix with a small peak of bars standing above it.
 
     ``heights``: bar heights as fractions of ``peak_height`` (empty = no bars).
@@ -182,6 +183,8 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
     ``suffix_height``: if set, size the suffix so its top sits this far above
     the axis (e.g. ``peak_height`` = level with the tallest bar); overrides
     ``suffix_scale``.
+    ``suffix_tracking``: extra space after each suffix letter (artboard units;
+    the "MS" stroke is 11.88 wide for scale).
     ``suffix_span``: letter-space the suffix so it spans the width of "MS".
     """
     from .text import letter_gap, logo_text
@@ -223,7 +226,7 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
         if suffix_height is not None:
             unit = logo_text(suffix, 0, axis)
             suffix_scale = suffix_height / (axis - unit.bbox[1])
-        tracking = 0.0
+        tracking = suffix_tracking
         ms_left, ms_right = letters[-2].bounds[0], letters[-1].bounds[2]
         if suffix_span and len(suffix) > 1:
             w0 = logo_text(suffix, 0, axis, scale=suffix_scale).width
@@ -310,6 +313,20 @@ def _pen15_lib(size: str, pos: str):
 
 PEN15_LIB_VARIANTS = {f"openms-lib-pen15-lib-{size}-{pos}": _pen15_lib(size, pos)
                       for size in LIB_SIZES for pos in LIB_POSITIONS}
+
+
+#: letter-spacing experiments on the favourite (s70, right-aligned)
+S70_TRACKINGS = (4, 8, 12, 16)
+
+
+def _s70_tracked(t: float):
+    def fn(theme: str = "standard"):
+        return openms_lib_pen15(theme, suffix_scale=0.70, suffix_align="right", suffix_tracking=t)
+    fn.__doc__ = f'pen15 with "lib" 0.7 x MS size, right-aligned, +{t} units letter spacing.'
+    return fn
+
+
+S70_TRACKED = {f"openms-lib-pen15-lib-s70-right-t{t:02d}": _s70_tracked(t) for t in S70_TRACKINGS}
 
 
 PEAK4_PEN_PADDED = {f"openms-lib-peak4-pen-pad{round(p * 100):02d}": _peak4_pen_padded(p)
@@ -466,6 +483,7 @@ PRESETS = {
     "openms-lib-peak4-pen": openms_lib_peak4_pen,
     **PEAK4_PEN_PADDED,
     **PEN15_LIB_VARIANTS,
+    **S70_TRACKED,
     "openms-lib-peak4-open": openms_lib_peak4_open,
     "openms-lib-peak4-open-span": openms_lib_peak4_open_span,
     "openms-lib-plain-span": openms_lib_plain_span,
@@ -478,9 +496,10 @@ PRESETS = {
 #: preset stays available from the CLI / build/.
 PUBLISHED = [
     "full",
-    "openms-lib-peak4-pen-pad15",       # favourite ("lib" 0.62x, right-aligned)
-    "openms-lib-pen15-lib-s70-right",
-    "openms-lib-pen15-lib-s80-right",   # runner-up
+    "openms-lib-peak4-pen-pad15",       # "lib" 0.62x, right-aligned
+    "openms-lib-pen15-lib-s70-right",   # favourite
+    *S70_TRACKED,                       # letter-spacing experiments on s70-right
+    "openms-lib-pen15-lib-s80-right",
 ]
 
 TITLES = {
@@ -503,6 +522,7 @@ TITLES = {
     "openms-lib-peak4-pen": "OpenMS-lib logo",
     **{k: "OpenMS-lib logo" for k in PEAK4_PEN_PADDED},
     **{k: "OpenMS-lib logo" for k in PEN15_LIB_VARIANTS},
+    **{k: "OpenMS-lib logo" for k in S70_TRACKED},
     "openms-lib-peak4-open": "OpenMS-lib logo",
     "openms-lib-peak4-open-span": "OpenMS-lib logo",
     "openms-lib-plain-span": "OpenMS-lib logo",
