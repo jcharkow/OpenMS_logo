@@ -54,6 +54,7 @@ openms_logo/
                       openms-lib-spectrum, pyopenms-viz (spectrum_wordmark for new products)
   __main__.py         CLI (python -m openms_logo --help)
 scripts/fetch_fonts.py   downloads the brand fonts (OFL) into fonts/ (git-ignored)
+scripts/make_previews.py PNG gallery of logos/ -> previews/ (committed)
 scripts/render_check.py  PNG previews + pixel diff against the official logo
 tests/                   reproduction tests (pytest)
 logos/                   generated SVGs for every preset (committed; never hand-edit)
@@ -83,6 +84,7 @@ rm logos/*.svg && python -m openms_logo $(python -c "from openms_logo.presets im
 ```
 
 The tests fail if `logos/` is stale or holds files that aren't in `PUBLISHED`.
+Then refresh the PNG gallery with `python scripts/make_previews.py`, which writes `previews/`, and commit it too.
 Except for `logos/full*.svg`, everything in `logos/` is a derived sublogo and is not yet official.
 
 ## Known discrepancies (don't "fix" these silently)
