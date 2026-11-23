@@ -78,7 +78,7 @@ def letter_gap(left: str, right: str, scale: float = 1.0) -> float:
 
 def logo_text(text: str, x: float, baseline: float = brand.BASELINE_MS, *,
               scale: float = 1.0, font: str = "alternates", paint=INK,
-              name: str | None = None) -> Element:
+              name: str | None = None, tracking: float = 0.0) -> Element:
     """Lettering that matches the weight of the logo letters.
 
     ``scale=1`` gives letters the same size as "MS"; the stroke scales with
@@ -87,7 +87,7 @@ def logo_text(text: str, x: float, baseline: float = brand.BASELINE_MS, *,
     """
     size = brand.GLYPH_SIZE * scale
     sw = brand.GLYPH_STROKE * scale
-    d, _ = outline(text, x, baseline, size, font)
+    d, _ = outline(text, x, baseline, size, font, tracking)
     # Painted with stroke = fill so it matches the expanded outline paths of the
     # official letters. stroke-width is the total stroke (half on each side).
     markup = f'<path d="{d}" stroke-width="{sw:.2f}" stroke-linejoin="miter"/>'

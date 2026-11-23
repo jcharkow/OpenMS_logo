@@ -163,12 +163,16 @@ PEAK_COLORS = ("yellow", "orange", "pink", "purple")
 
 def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: str = "lib",
                   prefix: str = "", colors: str = "solid", peak_height: float = 112.0,
-                  over: str = "Open", suffix_scale: float = 0.62):
+                  over: str = "Open", suffix_scale: float = 0.62,
+                  spread: str | None = None, suffix_span: bool = False):
     """One-line "OpenMS" + suffix with a small peak of bars standing above it.
 
     ``heights``: bar heights as fractions of ``peak_height`` (empty = no bars).
     ``colors``: "solid" (one logo colour per bar) or "gradient".
-    ``over``: centre the peak over "Open" or "OpenMS".
+    ``over``: centre the peak over "Open" or "OpenMS" (bars at the official pitch).
+    ``spread``: instead, stretch the bars evenly across "pen" or "Open"
+    (outer bar edges flush with the outer letter edges; bar width unchanged).
+    ``suffix_span``: letter-space the suffix so it spans the width of "MS".
     """
     from .text import letter_gap, logo_text
 
@@ -176,10 +180,19 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
     axis = min(el.bounds[1] for el in letters) - AXIS_GAP
     out = []
     if heights:
-        span = letters[3] if over == "Open" else letters[-1]
-        centre = (letters[0].bounds[0] + span.bounds[2]) / 2
-        width = (len(heights) - 1) * brand.BAR_PITCH + brand.BAR_WIDTH
-        x0 = centre - width / 2
+        if spread:
+            first = {"pen": letters[1], "Open": letters[0]}[spread]
+            x0, x_end = first.bounds[0], letters[3].bounds[2]
+            if suffix_span:   # keep the last bar clear of the suffix above "M"
+                x_end = min(x_end, letters[4].bounds[0] - 2 * AXIS_GAP)
+            width = x_end - x0
+            pitch = (width - brand.BAR_WIDTH) / max(len(heights) - 1, 1)
+        else:
+            span = letters[3] if over == "Open" else letters[-1]
+            centre = (letters[0].bounds[0] + span.bounds[2]) / 2
+            pitch = brand.BAR_PITCH
+            width = (len(heights) - 1) * pitch + brand.BAR_WIDTH
+            x0 = centre - width / 2
         if colors == "solid":
             paints = [brand.LOGO_COLORS[c] for c in PEAK_COLORS[:len(heights)]]
         else:
@@ -187,7 +200,7 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
                 (0, brand.LOGO_COLORS["yellow"]), (0.5, brand.LOGO_COLORS["orange"]),
                 (1, brand.LOGO_COLORS["pink"])))
             paints = [grad] * len(heights)
-        out += [E.bar(x0 + i * brand.BAR_PITCH, f * peak_height, "up", axis_y=axis,
+        out += [E.bar(x0 + i * pitch, f * peak_height, "up", axis_y=axis,
                       name=f"peak_bar_{i + 1}", paint=paint)
                 for i, (f, paint) in enumerate(zip(heights, paints))]
     out += letters
@@ -195,7 +208,12 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
         pre = logo_text(prefix, 0, brand.BASELINE_OPEN, name=f"text_{prefix}")
         out.append(pre.translate(letters[0].bounds[0] - letter_gap(prefix[-1], "O") - pre.bounds[2]))
     if suffix:
-        probe = logo_text(suffix, 0, axis, scale=suffix_scale, name=f"text_{suffix}")
+        tracking = 0.0
+        if suffix_span and len(suffix) > 1:
+            target = letters[-1].bounds[2] - letters[-2].bounds[0]   # "MS" width
+            w0 = logo_text(suffix, 0, axis, scale=suffix_scale).width
+            tracking = (target - w0) / (len(suffix) - 1)
+        probe = logo_text(suffix, 0, axis, scale=suffix_scale, name=f"text_{suffix}", tracking=tracking)
         sfx = probe.translate(letters[-1].bounds[2] - probe.bbox[2])
         out.append(sfx.with_paint(_lib_gradient(theme, sfx.bbox[0], sfx.bbox[2])))
     return out
@@ -209,6 +227,35 @@ def openms_lib_peak3(theme: str = "standard"):
 def openms_lib_peak4(theme: str = "standard"):
     """4 bars, skewed peak like pyopenms_viz, yellow -> pink gradient."""
     return peak_wordmark(theme, heights=(0.6, 1.0, 0.7, 0.3), colors="gradient")
+
+
+PEAK4 = (0.6, 1.0, 0.7, 0.3)
+PEAK4_SPREAD = (0.55, 1.0, 0.7, 0.4)   # smallest bar a bit taller so it doesn't read as a dot
+SPREAD_HEIGHT = 150.0
+SPAN_SCALE = 0.8                       # "lib" size when it spans "MS"
+
+
+def openms_lib_peak4_pen(theme: str = "standard"):
+    """peak4 with the bars spread across "pen"."""
+    return peak_wordmark(theme, heights=PEAK4_SPREAD, colors="gradient", spread="pen",
+                         peak_height=SPREAD_HEIGHT)
+
+
+def openms_lib_peak4_open(theme: str = "standard"):
+    """peak4 with the bars spread across "Open"."""
+    return peak_wordmark(theme, heights=PEAK4_SPREAD, colors="gradient", spread="Open",
+                         peak_height=SPREAD_HEIGHT)
+
+
+def openms_lib_peak4_open_span(theme: str = "standard"):
+    """Bars spread across "Open", "lib" spanning "MS"."""
+    return peak_wordmark(theme, heights=PEAK4_SPREAD, colors="gradient", spread="Open",
+                         peak_height=SPREAD_HEIGHT, suffix_span=True, suffix_scale=SPAN_SCALE)
+
+
+def openms_lib_plain_span(theme: str = "standard"):
+    """No bars; "lib" spanning "MS"."""
+    return peak_wordmark(theme, heights=(), suffix_span=True, suffix_scale=SPAN_SCALE)
 
 
 def openms_lib_peak4_tall(theme: str = "standard"):
@@ -341,6 +388,10 @@ PRESETS = {
     "openms-lib-official-stack": openms_lib_official_stack,
     "openms-lib-peak3": openms_lib_peak3,
     "openms-lib-peak4": openms_lib_peak4,
+    "openms-lib-peak4-pen": openms_lib_peak4_pen,
+    "openms-lib-peak4-open": openms_lib_peak4_open,
+    "openms-lib-peak4-open-span": openms_lib_peak4_open_span,
+    "openms-lib-plain-span": openms_lib_plain_span,
     "openms-lib-peak4-tall": openms_lib_peak4_tall,
     "openms-lib-peak4-solid": openms_lib_peak4_solid,
     "openms-lib-plain": openms_lib_plain,
@@ -350,12 +401,12 @@ PRESETS = {
 #: preset stays available from the CLI / build/.
 PUBLISHED = [
     "full",
-    "openms-lib-peak3",
     "openms-lib-peak4",
-    "openms-lib-peak4-tall",
-    "openms-lib-peak4-solid",
+    "openms-lib-peak4-pen",
+    "openms-lib-peak4-open",
+    "openms-lib-peak4-open-span",
     "openms-lib-plain",
-    "openms-lib-spectrum",
+    "openms-lib-plain-span",
 ]
 
 TITLES = {
@@ -375,6 +426,10 @@ TITLES = {
     "openms-lib-official-stack": "OpenMS-lib logo",
     "openms-lib-peak3": "OpenMS-lib logo",
     "openms-lib-peak4": "OpenMS-lib logo",
+    "openms-lib-peak4-pen": "OpenMS-lib logo",
+    "openms-lib-peak4-open": "OpenMS-lib logo",
+    "openms-lib-peak4-open-span": "OpenMS-lib logo",
+    "openms-lib-plain-span": "OpenMS-lib logo",
     "openms-lib-peak4-tall": "OpenMS-lib logo",
     "openms-lib-peak4-solid": "OpenMS-lib logo",
     "openms-lib-plain": "OpenMS-lib logo",

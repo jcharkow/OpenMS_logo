@@ -76,7 +76,12 @@ A bar you move keeps exactly the colour it has in the official logo, so don't re
 | `openms-lib-spectrum`, `pyopenms-viz` | **spectrum wordmark**: "OpenMS" on one line (`one_line_openms()`). Bars 1–10, flipped to stand on an axis above "Open", run yellow → pink. A suffix on the same axis, right-aligned over "MS", runs purple → blue. An optional prefix ("py") sits before the "O". The layout follows the pyopenms_viz logo. |
 
 | `openms-lib-square-top/-bottom/-ink` | **square stack**: "Open" over "MS lib", left-aligned. The suffix is sized so the second line is exactly as wide as "Open". Bars 1–10 are centred above "Open" (top, ink) or hang below "MS lib" (bottom). Use `presets.square_lib(theme, suffix=..., bars=..., suffix_paint=...)`. |
-| `openms-lib-peak3/-peak4/-peak4-tall/-peak4-solid/-plain` | **peak wordmark** (simplest; preferred direction as of 2026-11). It uses the spectrum layout with one small peak of 3–4 bars that rise and fall, centred over "Open", or no bars at all. Bars are either solid logo colours or a yellow → pink gradient, and the suffix is purple → blue. Use `presets.peak_wordmark(theme, heights=(...), colors=..., peak_height=...)`. |
+| `openms-lib-peak3/-peak4/-peak4-tall/-peak4-solid/-plain` | **peak wordmark** (simplest; preferred direction as of 2026-11). It uses the spectrum layout with one small peak of 3–4 bars that rise and fall, centred over "Open", or no bars at all. Bars are either solid logo colours or a yellow → pink gradient, and the suffix is purple → blue. Variants:
+  - `-pen` and `-open` spread the 4 bars evenly across "pen" or "Open" (`spread=`), with taller bars (`SPREAD_HEIGHT`).
+  - `-span` variants enlarge "lib" (`SPAN_SCALE`) and letter-space it across the width of "MS" (`suffix_span=True`).
+  - `peak4` is the user's favourite so far; `-pen`, `-open` and `-open-span` refine it.
+
+  Use `presets.peak_wordmark(theme, heights=(...), colors=..., peak_height=..., spread=..., suffix_span=...)`. |
 | `openms-lib-official-stack` | the untouched official logo with "lib" as a third line |
 
 For a new product logo, use `presets.square_lib(...)` or `presets.spectrum_wordmark(theme, suffix="...", prefix="...")`.
