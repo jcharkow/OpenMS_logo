@@ -1,0 +1,4 @@
+fonts/
+build/
+__pycache__/
+*.pyc
