@@ -165,7 +165,8 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
                   prefix: str = "", colors: str = "solid", peak_height: float = 112.0,
                   over: str = "Open", suffix_scale: float = 0.62,
                   spread: str | None = None, suffix_span: bool = False,
-                  spread_padding: float = 0.0):
+                  spread_padding: float = 0.0, suffix_align: str = "right",
+                  suffix_padding: float = 0.0, suffix_height: float | None = None):
     """One-line "OpenMS" + suffix with a small peak of bars standing above it.
 
     ``heights``: bar heights as fractions of ``peak_height`` (empty = no bars).
@@ -175,6 +176,12 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
     (outer bar edges flush with the outer letter edges; bar width unchanged).
     ``spread_padding``: inset on each side of the spread, as a fraction of
     the spread width (0.15 = bars cover the middle 70%, still centred).
+    ``suffix_align``: "right" (flush with "S"), "center" (over "MS") or
+    "left" (flush with "M"). ``suffix_padding``: inset from that edge as a
+    fraction of the "MS" width (ignored for "center").
+    ``suffix_height``: if set, size the suffix so its top sits this far above
+    the axis (e.g. ``peak_height`` = level with the tallest bar); overrides
+    ``suffix_scale``.
     ``suffix_span``: letter-space the suffix so it spans the width of "MS".
     """
     from .text import letter_gap, logo_text
@@ -213,13 +220,23 @@ def peak_wordmark(theme: str = "standard", heights=(0.55, 1.0, 0.55), suffix: st
         pre = logo_text(prefix, 0, brand.BASELINE_OPEN, name=f"text_{prefix}")
         out.append(pre.translate(letters[0].bounds[0] - letter_gap(prefix[-1], "O") - pre.bounds[2]))
     if suffix:
+        if suffix_height is not None:
+            unit = logo_text(suffix, 0, axis)
+            suffix_scale = suffix_height / (axis - unit.bbox[1])
         tracking = 0.0
+        ms_left, ms_right = letters[-2].bounds[0], letters[-1].bounds[2]
         if suffix_span and len(suffix) > 1:
-            target = letters[-1].bounds[2] - letters[-2].bounds[0]   # "MS" width
             w0 = logo_text(suffix, 0, axis, scale=suffix_scale).width
-            tracking = (target - w0) / (len(suffix) - 1)
+            tracking = (ms_right - ms_left - w0) / (len(suffix) - 1)
         probe = logo_text(suffix, 0, axis, scale=suffix_scale, name=f"text_{suffix}", tracking=tracking)
-        sfx = probe.translate(letters[-1].bounds[2] - probe.bbox[2])
+        inset = suffix_padding * (ms_right - ms_left)
+        if suffix_align == "right":
+            dx = ms_right - inset - probe.bbox[2]
+        elif suffix_align == "left":
+            dx = ms_left + inset - probe.bbox[0]
+        else:
+            dx = (ms_left + ms_right) / 2 - (probe.bbox[0] + probe.bbox[2]) / 2
+        sfx = probe.translate(dx)
         out.append(sfx.with_paint(_lib_gradient(theme, sfx.bbox[0], sfx.bbox[2])))
     return out
 
@@ -257,6 +274,41 @@ def _peak4_pen_padded(padding: float):
     fn.__doc__ = (f'peak4-pen with {padding:.0%} padding each side: the bars cover the '
                   f'middle {1 - 2 * padding:.0%} of "pen".')
     return fn
+
+
+def openms_lib_pen15(theme: str = "standard", **suffix_opts):
+    """The chosen OpenMS-lib design: 4-bar peak centred over "pen" with 15%
+    padding each side, "lib" above "MS" (right-aligned, 0.62 x "MS" size)."""
+    return peak_wordmark(theme, heights=PEAK4_SPREAD, colors="gradient", spread="pen",
+                         peak_height=SPREAD_HEIGHT, spread_padding=0.15, **suffix_opts)
+
+
+#: "lib" experiments on top of openms_lib_pen15: size x position
+LIB_SIZES = {
+    "s62": {"suffix_scale": 0.62},                 # current
+    "s80": {"suffix_scale": 0.80},                 # medium
+    "bar": {"suffix_height": SPREAD_HEIGHT},       # top of "lib" level with the tallest bar
+}
+LIB_POSITIONS = {
+    "right": {"suffix_align": "right"},
+    "right10": {"suffix_align": "right", "suffix_padding": 0.10},
+    "center": {"suffix_align": "center"},
+}
+
+
+def _pen15_lib(size: str, pos: str):
+    def fn(theme: str = "standard"):
+        return openms_lib_pen15(theme, **LIB_SIZES[size], **LIB_POSITIONS[pos])
+    label = {"s62": "0.62 x MS size", "s80": "0.8 x MS size",
+             "bar": "as tall as the top bar"}[size]
+    where = {"right": "right-aligned with S", "right10": "right-aligned, 10% in from S",
+             "center": "centred over MS"}[pos]
+    fn.__doc__ = f'pen15 with "lib" {label}, {where}.'
+    return fn
+
+
+PEN15_LIB_VARIANTS = {f"openms-lib-pen15-lib-{size}-{pos}": _pen15_lib(size, pos)
+                      for size in LIB_SIZES for pos in LIB_POSITIONS}
 
 
 PEAK4_PEN_PADDED = {f"openms-lib-peak4-pen-pad{round(p * 100):02d}": _peak4_pen_padded(p)
@@ -412,6 +464,7 @@ PRESETS = {
     "openms-lib-peak4": openms_lib_peak4,
     "openms-lib-peak4-pen": openms_lib_peak4_pen,
     **PEAK4_PEN_PADDED,
+    **PEN15_LIB_VARIANTS,
     "openms-lib-peak4-open": openms_lib_peak4_open,
     "openms-lib-peak4-open-span": openms_lib_peak4_open_span,
     "openms-lib-plain-span": openms_lib_plain_span,
@@ -424,9 +477,8 @@ PRESETS = {
 #: preset stays available from the CLI / build/.
 PUBLISHED = [
     "full",
-    *PEAK4_PEN_PADDED,
-    "openms-lib-plain",
-    "openms-lib-plain-span",
+    "openms-lib-peak4-pen-pad15",   # chosen design
+    *[k for k in PEN15_LIB_VARIANTS if k != "openms-lib-pen15-lib-s62-right"],  # = pad15
 ]
 
 TITLES = {
@@ -448,6 +500,7 @@ TITLES = {
     "openms-lib-peak4": "OpenMS-lib logo",
     "openms-lib-peak4-pen": "OpenMS-lib logo",
     **{k: "OpenMS-lib logo" for k in PEAK4_PEN_PADDED},
+    **{k: "OpenMS-lib logo" for k in PEN15_LIB_VARIANTS},
     "openms-lib-peak4-open": "OpenMS-lib logo",
     "openms-lib-peak4-open-span": "OpenMS-lib logo",
     "openms-lib-plain-span": "OpenMS-lib logo",

@@ -79,7 +79,11 @@ A bar you move keeps exactly the colour it has in the official logo, so don't re
 | `openms-lib-peak3/-peak4/-peak4-tall/-peak4-solid/-plain` | **peak wordmark** (simplest; preferred direction as of 2026-11). It uses the spectrum layout with one small peak of 3–4 bars that rise and fall, centred over "Open", or no bars at all. Bars are either solid logo colours or a yellow → pink gradient, and the suffix is purple → blue. Variants:
   - `-pen` and `-open` spread the 4 bars evenly across "pen" or "Open" (`spread=`), with taller bars (`SPREAD_HEIGHT`). `-pen` keeps 15% padding on each side (`spread_padding=0.15`). `-pen-padNN` are the same design with NN% padding (`PEN_PADDINGS`).
   - `-span` variants enlarge "lib" (`SPAN_SCALE`) and letter-space it across the width of "MS" (`suffix_span=True`).
-  - `peak4-pen` (bars centred over "pen" with padding) is the user's chosen direction as of 2026-11-23. The padding is still being decided; the `-padNN` variants are published for comparison.
+  - **Chosen design (2026-11-23):** `openms-lib-peak4-pen-pad15`, the same as `presets.openms_lib_pen15()`. The bars are centred over "pen" with 15% padding. The `openms-lib-pen15-lib-<size>-<pos>` variants try different sizes and positions for "lib":
+    - sizes: `s62`, `s80`, and `bar` (top of "lib" level with the tallest bar)
+    - positions: `right`, `right10` (10% in from "S") and `center` (over "MS")
+
+    Each is set through `LIB_SIZES` / `LIB_POSITIONS` and the `peak_wordmark()` options `suffix_align`, `suffix_padding` and `suffix_height`.
 
   Use `presets.peak_wordmark(theme, heights=(...), colors=..., peak_height=..., spread=..., suffix_span=...)`. |
 | `openms-lib-official-stack` | the untouched official logo with "lib" as a third line |
